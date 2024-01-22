@@ -3,25 +3,24 @@ const path = require('path');
 
 const pathFolder = path.join(__dirname, 'secret-folder');
 
-fs.promises
-  .readdir(pathFolder, { withFileTypes: true })
-  .then((data) => {
-    data.forEach((file) => {
-      const pathFile = path.join(pathFolder, file.name);
-      if (file.isFile()) {
-        const fileName = file.name.split('.')[0];
-        const fileExt = path.extname(pathFile).slice(1);
-        let fileSize = 0;
-        fs.promises
-          .stat(pathFile)
-          .then((stats) => {
-            if (stats.isFile()) {
-              fileSize = stats.size / 1024;
-              console.log(`${fileName}-${fileExt}-${fileSize}kb`);
-            }
-          })
-          .catch((error) => console.log(error));
-      }
+(async () => {
+  try {
+    const folderData = await fs.promises.readdir(pathFolder, {
+      withFileTypes: true,
     });
-  })
-  .catch((error) => console.log(error));
+    for (let file of folderData) {
+      if (file.isFile()) {
+        const pathFile = await path.join(pathFolder, file.name);
+        const fileName = await file.name.split('.')[0];
+        const fileExt = await path.extname(pathFile).slice(1);
+        const stat = await fs.promises.stat(pathFile);
+
+        if (stat.isFile()) {
+          console.log(`${fileName} - ${fileExt} - ${stat.size}bytes`);
+        }
+      }
+    }
+  } catch (err) {
+    console.log(err);
+  }
+})();
