@@ -1,55 +1,48 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
-let pathFolderCopy = path.join(__dirname, 'files-copy');
-let pathFolder = path.join(__dirname, 'files');
-
 (async () => {
-  const isFolderExists = await fs.promises
-    .access(pathFolderCopy)
-    .then(() => true)
-    .catch(() => false);
+  try {
+    const pathFolderCopy = path.join(__dirname, 'files-copy');
+    const pathFolder = path.join(__dirname, 'files');
 
-  if (isFolderExists) {
-    await fs.promises
-      .rm(pathFolderCopy, { recursive: true }, { force: true })
-      .then(() => console.log('copy folder was deleted'))
-      .catch((error) => console.log(error));
+    const isFolderCopyExists = await fs
+      .access(pathFolderCopy)
+      .then(() => true)
+      .catch(() => false);
+
+    if (isFolderCopyExists) {
+      await fs.rm(pathFolderCopy, { recursive: true }, { force: true });
+    }
+
+    await fs.mkdir(pathFolderCopy, { recursive: true });
+    await copyFiles(pathFolder, pathFolderCopy);
+  } catch (err) {
+    console.log(err);
   }
-
-  await fs.promises
-    .mkdir(pathFolderCopy, { recursive: true })
-    .then(() => {
-      console.log('copy folder "files-copy" was created\n');
-      copy(pathFolder, pathFolderCopy);
-    })
-    .catch((error) => console.log(error));
 })();
 
-async function copy(pathFolder, pathFolderCopy) {
-  let data = await fs.promises.readdir(pathFolder, {
-    withFileTypes: true,
-  });
+async function copyFiles(pathFolder, pathFolderCopy) {
+  try {
+    let folderFiles = await fs.readdir(pathFolder, { withFileTypes: true });
 
-  for (let file of data) {
-    const pathFile = path.join(pathFolder, file.name);
-    const pathFileCopy = path.join(pathFolderCopy, file.name);
+    for (let file of folderFiles) {
+      const pathFile = path.join(pathFolder, file.name);
+      const pathFileCopy = path.join(pathFolderCopy, file.name);
 
-    if (file.isFile()) {
-      await fs.promises.copyFile(pathFile, pathFileCopy).then(() => {
-        console.log(`file ${file.name} was copied`);
-      });
-    } else if (file.isDirectory()) {
-      fs.promises
-        .mkdir(path.join(pathFolderCopy, file.name), { recursive: true })
-        .then(() => {
-          console.log(`copy folder "${file.name}" was created\n`);
-          copy(
-            path.join(pathFolder, file.name),
-            path.join(pathFolderCopy, file.name),
-          );
-        })
-        .catch((error) => console.log(error));
+      if (file.isFile()) {
+        await fs.copyFile(pathFile, pathFileCopy);
+      } else if (file.isDirectory()) {
+        await fs.mkdir(path.join(pathFolderCopy, file.name), {
+          recursive: true,
+        });
+        await copyFiles(
+          path.join(pathFolder, file.name),
+          path.join(pathFolderCopy, file.name),
+        );
+      }
     }
+  } catch (err) {
+    console.log(err);
   }
 }
