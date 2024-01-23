@@ -12,7 +12,7 @@ const path = require('path');
       if (file.isFile()) {
         const pathFile = path.join(pathFolder, file.name);
         let fileExt = path.extname(pathFile);
-        const fileName = file.name.slice(0, file.name.indexOf(fileExt));
+        const fileName = file.name.slice(0, file.name.lastIndexOf(fileExt));
         const stat = await fs.promises.stat(pathFile);
 
         if (stat.isFile()) {
