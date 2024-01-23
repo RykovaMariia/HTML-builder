@@ -10,7 +10,7 @@ fs.writeFile(pathFile, '', () => {});
 const output = fs.createWriteStream(pathFile);
 
 stdin.on('data', (text) => {
-  if (text.toString() == 'exit\n') {
+  if (text.toString().trim() == 'exit') {
     stdout.write('\n Goodbye \n');
     exit();
   }
