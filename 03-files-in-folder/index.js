@@ -11,12 +11,12 @@ const path = require('path');
     for (let file of folderData) {
       if (file.isFile()) {
         const pathFile = path.join(pathFolder, file.name);
-        const fileName = file.name.split('.')[0];
-        const fileExt = path.extname(pathFile).slice(1);
+        let fileExt = path.extname(pathFile);
+        const fileName = file.name.slice(0, file.name.indexOf(fileExt));
         const stat = await fs.promises.stat(pathFile);
 
         if (stat.isFile()) {
-          console.log(`${fileName} - ${fileExt} - ${stat.size}bytes`);
+          console.log(`${fileName} - ${fileExt.slice(1)} - ${stat.size}bytes`);
         }
       }
     }
