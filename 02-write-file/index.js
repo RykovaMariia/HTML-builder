@@ -15,9 +15,9 @@ stdin.on('data', (text) => {
     exit();
   }
   output.write(text);
+});
 
-  process.on('SIGINT', () => {
-    stdout.write('\nGoodbye \n');
-    exit();
-  });
+process.on('SIGINT', () => {
+  stdout.write('\nGoodbye \n');
+  exit();
 });
